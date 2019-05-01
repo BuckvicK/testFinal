@@ -159,6 +159,4 @@ void	spawnCarFromLeft();
 void	spawnCarFromRight();
 bool	main_loop();
 
-int		init_window(void);
-
 #endif

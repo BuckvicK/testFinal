@@ -1,54 +1,153 @@
-#include "macfile.h"
+#include "cars.h"
 
-#include <SDL2/SDL.h>
+std::vector<sCar*> cars;
 
-SDL_Window* window = NULL;
-SDL_Surface* screenSurface = NULL;
+void	spawnCar() {
+	int		r;
 
-int		init_window(void)
-{
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-		printf("SDL not init! SDL_Error: %s\n", SDL_GetError());
+	r = rand();
+	if (r % 4 == 0)
+		spawnCarFromRight();
+	else if (r % 4 == 1)
+		spawnCarFromTop();
+	else if (r % 4 == 2)
+		spawnCarFromBot();
+	else if (r % 4 == 3)
+		spawnCarFromLeft();
+}
+
+sCar*	randTypeCar() {
+	sCar*	car;
+	int		carType = rand();
+
+	if (carType % 3 == 0)
+		car = new sGasEngine();
+	else if (carType % 3 == 1)
+		car = new sElectroCar();
 	else
-	{
-		window = SDL_CreateWindow("Test task for MYTONA", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-		if (window == NULL)
-			printf("Window not create! SDL_Error: %s\n", SDL_GetError());
-		else
-		{
-			screenSurface = SDL_GetWindowSurface(window);
-			int x = 0;
-			bool done = false;
-			SDL_Event event;
-			while (!done)
-			{
-				while (SDL_PollEvent(&event))
-				{
-					switch (event.type)
-					{
-						case SDL_QUIT:
-							done = true;
-							break;
+		car = new sHybrid();
+	car->refill(100);
+	car->speed = 1;
+	cars.push_back(car);
+	return car;
+}
+
+void	spawnCarFromTop() {
+	int	y = 100;
+	for (auto c: cars){
+		if (c->dir == eDirection::DOWN && c->rect.pos.y <= y)
+			return ;
+	}
+	sCar* car = randTypeCar();
+
+	car->rect = sRect(SCREEN_WIDTH / 2 - 100, 0, 100, 100);
+	car->dir = eDirection::DOWN;
+}
+
+void	spawnCarFromBot() {
+	int	y = SCREEN_HEIGHT - 100;
+	for (auto c: cars){
+		if (c->dir == eDirection::UP && c->rect.pos.y + c->rect.size.height >= y)
+			return ;
+	}
+	sCar* car = randTypeCar();
+
+	car->rect = sRect(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 100, 100, 100);
+	car->dir = eDirection::UP;
+}
+
+void	spawnCarFromLeft() {
+	int	x = 100;
+	for (auto c: cars){
+		if (c->dir == eDirection::RIGHT && c->rect.pos.x <= x)
+			return ;
+	}
+	sCar* car = randTypeCar();
+
+	car->rect = sRect(0, SCREEN_HEIGHT / 2, 100, 100);
+	car->dir = eDirection::RIGHT;
+}
+
+void	spawnCarFromRight() {
+	int	x = SCREEN_WIDTH - 100;
+	for (auto c: cars){
+		if (c->dir == eDirection::LEFT && c->rect.pos.x + c->rect.size.width >= x)
+			return ;
+	}
+	sCar* car = randTypeCar();
+
+	car->rect = sRect(SCREEN_WIDTH - 100, SCREEN_HEIGHT / 2 - 100, 100, 100);
+	car->dir = eDirection::LEFT;
+}
+
+bool	main_loop() {
+	std::vector<sCar*> moveCar;
+
+	int	passCount = 0;
+	for (int i = 0; i < cars.size(); i++){
+		int		pass = 0;
+		int		intr = 0;
+		sCar*	car = cars[i];
+		
+		passCount = 0;
+		for (int j = 0;  j < cars.size(); j++) {
+			sCar*	car22 = cars[j];
+			if (car != car22) {
+				if (car->getFuturePos().intersects(car22->getFuturePos())) {
+					if (car->needPassOtherCar(car22)) {
+						passCount++;
+						break ;
 					}
 				}
-				int ret = main_loop();
-				std::vector<SDL_Rect> rects;
-				for (int i = 0; i < cars.size(); i++) {
-					SDL_Rect rect;
-					rect = {cars[i]->rect.pos.x, cars[i]->rect.pos.y, cars[i]->rect.size.width, cars[i]->rect.size.height};
-					rects.push_back(rect);
-				}
-				SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-				for (auto rect: rects) {
-					SDL_FillRect(screenSurface, &rect, SDL_MapRGB(screenSurface->format, 0x99, 0x99, 0x99));
-				}
-				SDL_UpdateWindowSurface(window);
-				if (ret != 0)
-					done = true;
+				if (car->getFuturePos().intersects(car22->rect))
+					intr++;
 			}
 		}
+		if (passCount != 0)
+			continue ;
+		if (intr == 0)
+			moveCar.push_back(car);
+		if (car->rect.pos.x < -car->rect.size.width || \
+			car->rect.pos.y < -car->rect.size.height || \
+			car->rect.pos.x > SCREEN_WIDTH || \
+			car->rect.pos.y > SCREEN_HEIGHT) {
+				spawnCar();
+				cars.erase(cars.begin() + i);
+				break;
+		}
 	}
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	for (auto c: moveCar)
+	{
+		c->move();
+	}
+	if (moveCar.size() == 0){
+		sCar* minCar = cars[0];
+		for (auto c: cars){
+			if (c != minCar && c->rect.pos.x <= minCar->rect.pos.x)
+				for (auto c1: cars) {
+					if (c != c1 && c1 != minCar && !c->getFuturePos().intersects(c1->rect)){
+						minCar = c;
+					}
+				}
+		}
+		int check = 0;
+		for (auto c: cars){
+			if (minCar->getFuturePos().intersects(c->rect))
+				check++;
+		}
+		if (check == 0)
+			minCar->move();
+	}
+	moveCar.clear();
+	if (cars.size() < initialCarsCount)
+		spawnCar();
+	return (0);
+}
+
+int		main(int argc, char** argv) {
+	for (auto i = 0; i < initialCarsCount; ++i) {
+		spawnCar();
+	}
+	init_window();
 	return 0;
 }

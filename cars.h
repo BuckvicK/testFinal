@@ -1,10 +1,10 @@
 #ifndef CARS_H
 # define CARS_H
-#include <vector>
-#include <stdio.h>
+# include <vector>
+# include <stdio.h>
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+# define SCREEN_WIDTH 1024
+# define SCREEN_HEIGHT 768
 
 struct sPos {
 	int x;

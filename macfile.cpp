@@ -338,7 +338,7 @@ void test() {
 */
 
 int		main(int argc, char** argv) {
-	for (auto i = 0; i < 2; ++i) {
+	for (auto i = 0; i < initialCarsCount; ++i) {
 		spawnCar();
 	}
 	// test_spawn();

@@ -93,10 +93,6 @@ struct	sCar {
 				result = true;
 			break;
 		case eDirection::DOWN:
-			// if ((otherdir == eDirection::RIGHT) && \
-			// 	(otherCar->rect.pos.x + otherCar->rect.size.width <= rect.pos.x) && \
-			// 	(rect.pos.y <= otherCar->rect.pos.y + otherCar->rect.size.height))
-			// 	result = true;
 			if ((otherdir == eDirection::RIGHT) && \
 				(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
 				(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
@@ -109,10 +105,6 @@ struct	sCar {
 				result = true;
 			break;
 		case eDirection::LEFT:
-			// if ((otherdir == eDirection::DOWN) &&\
-			// 	(otherCar->rect.pos.y <= rect.pos.y + rect.size.height) && \
-			// 	(rect.pos.x + rect.size.width >= otherCar->rect.pos.x))
-			// 	result = true;
 			if ((otherdir == eDirection::DOWN) &&\
 				(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height) && \
 				(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))

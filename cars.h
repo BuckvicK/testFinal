@@ -74,7 +74,7 @@ struct	sCar {
 		case eDirection::DOWN:
 			return sRect(rect.pos.x, rect.pos.y + speed, rect.size.width, rect.size.height);
 		case eDirection::RIGHT:
-			return sRect(rect.pos.x + speed, rect.pos.y, rect.size.width, rect.size.width);
+			return sRect(rect.pos.x + speed, rect.pos.y, rect.size.width, rect.size.height);
 		case eDirection::LEFT:
 			return sRect(rect.pos.x - speed, rect.pos.y, rect.size.width, rect.size.height);
 		default:

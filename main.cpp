@@ -111,8 +111,11 @@ bool	main_loop() {
 			car->rect.pos.y < -car->rect.size.height || \
 			car->rect.pos.x > SCREEN_WIDTH || \
 			car->rect.pos.y > SCREEN_HEIGHT) {
-				spawnCar();
+				sCar* tmp;
+				tmp = cars[i];
+				delete tmp;
 				cars.erase(cars.begin() + i);
+				spawnCar();
 				break;
 		}
 	}

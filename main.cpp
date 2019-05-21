@@ -81,76 +81,127 @@ void	spawnCarFromRight() {
 }
 
 bool	main_loop() {
-	std::vector<sCar*> moveCar;
+	std::vector<sCar*> moveCars;
 
+	int	carOnCross = 0;
+	for (auto car: cars){
+		if (car->dir == eDirection::RIGHT){
+			int futurePosX = car->getFuturePos().pos.x + car->rect.size.width;
+			if ((futurePosX >= SCREEN_WIDTH / 2 - 100) && (futurePosX <= SCREEN_WIDTH / 2)){
+				carOnCross++;
+				printf("RIGHT\n");
+			}
+		}
+		else if (car->dir == eDirection::LEFT){
+			int futurePosX = car->getFuturePos().pos.x;
+			if ((futurePosX <= SCREEN_WIDTH / 2 + 100) && (futurePosX >= SCREEN_WIDTH / 2)){
+				carOnCross++;
+				printf("LEFT\n");
+			}
+		}
+		else if (car->dir == eDirection::DOWN){
+			int futurePosY = car->getFuturePos().pos.y + car->rect.size.height;
+			if ((futurePosY >= SCREEN_HEIGHT / 2 - 100) && (futurePosY <= SCREEN_HEIGHT / 2)){
+				carOnCross++;
+				printf("DOWN\n");
+			}
+		}
+		else if (car->dir == eDirection::UP){
+			int futurePosY = car->getFuturePos().pos.y;
+			if ((futurePosY <= SCREEN_HEIGHT / 2 + 100) && (futurePosY >= SCREEN_HEIGHT / 2)){
+				carOnCross++;
+				printf("UP\n");
+			}
+		}
+		if (carOnCross >= 4)
+			break ;
+	}
+	if (carOnCross >= 4){
+		printf("%d CARS ON CROSS!!!\n", carOnCross);
+		sCar* minCar = cars[0];
+		for (auto car: cars){
+			if (car->rect.pos.x < minCar->rect.pos.x){
+				minCar = car;
+			}
+		}
+		sRect	minCarFuturePos = minCar->getFuturePos();
+		int		checkIntersect = 0;
+		for (auto car: cars){
+			if (car != minCar && car->rect.intersects(minCarFuturePos)){
+				checkIntersect++;
+				break ;
+			}
+		}
+		if (checkIntersect == 0){
+			printf("Min car move!\n");
+			minCar->move();
+			return (0);
+		}
+		getchar();
+	}
+
+	printf("Hm...\n");
 	int	passCount = 0;
 	for (int i = 0; i < cars.size(); i++){
 		int		pass = 0;
 		int		intr = 0;
-		sCar*	car = cars[i];
-		
+		sCar*	currentCar = cars[i];
+
 		passCount = 0;
 		for (int j = 0;  j < cars.size(); j++) {
-			sCar*	car22 = cars[j];
-			if (car != car22) {
-				if (car->getFuturePos().intersects(car22->getFuturePos())) {
-					if (car->needPassOtherCar(car22)) {
+			sCar*	otherCar = cars[j];
+			if (currentCar != otherCar) {
+				if (currentCar->getFuturePos().intersects(otherCar->getFuturePos())) {
+					if (currentCar->needPassOtherCar(otherCar)) {
 						passCount++;
 						break ;
 					}
 				}
-				if (car->getFuturePos().intersects(car22->rect))
+				if (currentCar->getFuturePos().intersects(otherCar->rect))
 					intr++;
 			}
 		}
 		if (passCount != 0)
 			continue ;
 		if (intr == 0)
-			moveCar.push_back(car);
-		if (car->rect.pos.x < -car->rect.size.width || \
-			car->rect.pos.y < -car->rect.size.height || \
-			car->rect.pos.x > SCREEN_WIDTH || \
-			car->rect.pos.y > SCREEN_HEIGHT) {
+			moveCars.push_back(currentCar);
+		if (currentCar->rect.pos.x < -currentCar->rect.size.width || \
+			currentCar->rect.pos.y < -currentCar->rect.size.height || \
+			currentCar->rect.pos.x > SCREEN_WIDTH || \
+			currentCar->rect.pos.y > SCREEN_HEIGHT) {
 				sCar* tmp;
 				tmp = cars[i];
 				delete tmp;
 				cars.erase(cars.begin() + i);
-				spawnCar();
 				break;
 		}
 	}
-	for (auto c: moveCar)
-	{
+
+	for (auto c: moveCars)
 		c->move();
-	}
-	if (moveCar.size() == 0){
-		sCar* minCar = cars[0];
-		for (auto c: cars){
-			if (c != minCar && c->rect.pos.x <= minCar->rect.pos.x)
-				for (auto c1: cars) {
-					if (c != c1 && c1 != minCar && !c->getFuturePos().intersects(c1->rect)){
-						minCar = c;
-					}
-				}
-		}
-		int check = 0;
-		for (auto c: cars){
-			if (minCar->getFuturePos().intersects(c->rect))
-				check++;
-		}
-		if (check == 0)
-			minCar->move();
-	}
-	moveCar.clear();
-	if (cars.size() < initialCarsCount)
-		spawnCar();
+	moveCars.clear();
+
+	// if (cars.size() < initialCarsCount)
+	// 	spawnCar();
 	return (0);
 }
 
+void	testSpawn(){
+	spawnCarFromLeft();
+	cars[0]->rect.pos.x = SCREEN_WIDTH / 2 - 110 - cars[0]->rect.size.width;
+	spawnCarFromRight();
+	cars[1]->rect.pos.x = SCREEN_WIDTH / 2 + 110;
+	spawnCarFromTop();
+	cars[2]->rect.pos.y = SCREEN_HEIGHT / 2 - 110 - cars[2]->rect.size.width;
+	spawnCarFromBot();
+	cars[3]->rect.pos.y = SCREEN_HEIGHT / 2 + 110;
+}
+
 int		main(int argc, char** argv) {
-	for (auto i = 0; i < initialCarsCount; ++i) {
-		spawnCar();
-	}
+	// for (auto i = 0; i < initialCarsCount; ++i) {
+	// 	spawnCar();
+	// }
+	testSpawn();
 	init_window();
 	return 0;
 }

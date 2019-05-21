@@ -1,6 +1,7 @@
 #include "cars.h"
 
 std::vector<sCar*> cars;
+sRect	cross;
 
 void	spawnCar() {
 	int		r;
@@ -80,44 +81,50 @@ void	spawnCarFromRight() {
 	car->dir = eDirection::LEFT;
 }
 
+bool	isCarOnCross(sCar* car){
+	if (car->dir == eDirection::RIGHT){
+		if ((car->getFuturePos().pos.x + car->rect.size.width >= SCREEN_WIDTH / 2 - 100) && \
+			(car->getFuturePos().pos.x < SCREEN_WIDTH / 2)){
+			return (true);
+		}
+		// printf("RIGHT\n");
+	}
+	else if (car->dir == eDirection::LEFT){
+		if ((car->getFuturePos().pos.x <= SCREEN_WIDTH / 2 + 100) && \
+			(car->getFuturePos().pos.x + car->getFuturePos().size.width > SCREEN_WIDTH / 2)){
+			return (true);
+		}
+		// printf("LEFT\n");
+	}
+	else if (car->dir == eDirection::DOWN){
+		if ((car->getFuturePos().pos.y + car->rect.size.height >= SCREEN_HEIGHT / 2 - 100) && \
+			(car->getFuturePos().pos.y < SCREEN_HEIGHT / 2)){
+			return (true);
+		}
+		// printf("DOWN\n");
+	}
+	else if (car->dir == eDirection::UP){
+		if ((car->getFuturePos().pos.y <= SCREEN_HEIGHT / 2 + 100) && \
+			(car->getFuturePos().pos.y + car->getFuturePos().size.height > SCREEN_HEIGHT / 2)){
+			return (true);
+		}
+		// printf("UP\n");
+	}
+	return (false);
+}
+
 bool	main_loop() {
 	std::vector<sCar*> moveCars;
 
-	int	carOnCross = 0;
+	int	carsOnCross = 0;
 	for (auto car: cars){
-		if (car->dir == eDirection::RIGHT){
-			int futurePosX = car->getFuturePos().pos.x + car->rect.size.width;
-			if ((futurePosX >= SCREEN_WIDTH / 2 - 100) && (futurePosX <= SCREEN_WIDTH / 2)){
-				carOnCross++;
-				printf("RIGHT\n");
-			}
-		}
-		else if (car->dir == eDirection::LEFT){
-			int futurePosX = car->getFuturePos().pos.x;
-			if ((futurePosX <= SCREEN_WIDTH / 2 + 100) && (futurePosX >= SCREEN_WIDTH / 2)){
-				carOnCross++;
-				printf("LEFT\n");
-			}
-		}
-		else if (car->dir == eDirection::DOWN){
-			int futurePosY = car->getFuturePos().pos.y + car->rect.size.height;
-			if ((futurePosY >= SCREEN_HEIGHT / 2 - 100) && (futurePosY <= SCREEN_HEIGHT / 2)){
-				carOnCross++;
-				printf("DOWN\n");
-			}
-		}
-		else if (car->dir == eDirection::UP){
-			int futurePosY = car->getFuturePos().pos.y;
-			if ((futurePosY <= SCREEN_HEIGHT / 2 + 100) && (futurePosY >= SCREEN_HEIGHT / 2)){
-				carOnCross++;
-				printf("UP\n");
-			}
-		}
-		if (carOnCross >= 4)
+		if (isCarOnCross(car) == true)
+			carsOnCross++;
+		if (carsOnCross >= 4)
 			break ;
 	}
-	if (carOnCross >= 4){
-		printf("%d CARS ON CROSS!!!\n", carOnCross);
+
+	if (carsOnCross >= 4){
 		sCar* minCar = cars[0];
 		for (auto car: cars){
 			if (car->rect.pos.x < minCar->rect.pos.x){
@@ -133,15 +140,58 @@ bool	main_loop() {
 			}
 		}
 		if (checkIntersect == 0){
-			printf("Min car move!\n");
-			minCar->move();
-			return (0);
+			while(isCarOnCross(minCar)){
+				minCar->move();
+				drawScene();
+			}
 		}
-		getchar();
 	}
 
-	printf("Hm...\n");
-	int	passCount = 0;
+	for (int i = 0; i < cars.size(); i++){
+		int		intr = 0;
+		int 	passCount = 0;
+		sCar*	currentCar = cars[i];
+
+		// if (isCarOnCross(currentCar)){
+		// 	for (auto c: cars){
+		// 		if (currentCar != c && isCarOnCross(c)){
+		// 			if (currentCar->needPassOtherCar(c)) {
+		// 				passCount++;
+		// 				break ;
+		// 			}
+		// 		}
+		// 	}
+		// }
+		for (int j = 0;  j < cars.size(); j++) {
+			sCar*	otherCar = cars[j];
+			if (currentCar != otherCar) {
+				if (currentCar->getFuturePos().intersects(otherCar->getFuturePos())) {
+					if (currentCar->needPassOtherCar(otherCar)) {
+						passCount++;
+						break ;
+					}
+				}
+				if (currentCar->getFuturePos().intersects(otherCar->rect))
+					intr++;
+			}
+		}
+		if (passCount != 0)
+			continue ;
+		if (intr == 0)
+			moveCars.push_back(currentCar);
+
+		if (currentCar->rect.pos.x < -currentCar->rect.size.width || \
+			currentCar->rect.pos.y < -currentCar->rect.size.height || \
+			currentCar->rect.pos.x > SCREEN_WIDTH || \
+			currentCar->rect.pos.y > SCREEN_HEIGHT) {
+				sCar* tmp = cars[i];
+				delete tmp;
+				cars.erase(cars.begin() + i);
+				break;
+		}
+	}
+
+	/*
 	for (int i = 0; i < cars.size(); i++){
 		int		pass = 0;
 		int		intr = 0;
@@ -165,39 +215,48 @@ bool	main_loop() {
 			continue ;
 		if (intr == 0)
 			moveCars.push_back(currentCar);
+
 		if (currentCar->rect.pos.x < -currentCar->rect.size.width || \
 			currentCar->rect.pos.y < -currentCar->rect.size.height || \
 			currentCar->rect.pos.x > SCREEN_WIDTH || \
 			currentCar->rect.pos.y > SCREEN_HEIGHT) {
-				sCar* tmp;
-				tmp = cars[i];
+				sCar* tmp = cars[i];
 				delete tmp;
 				cars.erase(cars.begin() + i);
 				break;
 		}
 	}
+	*/
 
 	for (auto c: moveCars)
 		c->move();
 	moveCars.clear();
 
-	// if (cars.size() < initialCarsCount)
-	// 	spawnCar();
+	if (cars.size() < initialCarsCount)
+		spawnCar();
 	return (0);
 }
 
 void	testSpawn(){
 	spawnCarFromLeft();
-	cars[0]->rect.pos.x = SCREEN_WIDTH / 2 - 110 - cars[0]->rect.size.width;
+	cars[0]->rect.pos.x = SCREEN_WIDTH / 2 - 100 - cars[0]->rect.size.width;
 	spawnCarFromRight();
-	cars[1]->rect.pos.x = SCREEN_WIDTH / 2 + 110;
+	cars[1]->rect.pos.x = SCREEN_WIDTH / 2 + 100;
 	spawnCarFromTop();
-	cars[2]->rect.pos.y = SCREEN_HEIGHT / 2 - 110 - cars[2]->rect.size.width;
+	cars[2]->rect.pos.y = SCREEN_HEIGHT / 2 - 100 - cars[2]->rect.size.width;
 	spawnCarFromBot();
-	cars[3]->rect.pos.y = SCREEN_HEIGHT / 2 + 110;
+	cars[3]->rect.pos.y = SCREEN_HEIGHT / 2 + 100;
+}
+
+void	createCross(){
+	cross.pos.x = SCREEN_WIDTH / 2 - 100;
+	cross.pos.y = SCREEN_HEIGHT / 2 - 100;
+	cross.size.width = 200;
+	cross.size.height = 200;
 }
 
 int		main(int argc, char** argv) {
+	createCross();
 	// for (auto i = 0; i < initialCarsCount; ++i) {
 	// 	spawnCar();
 	// }

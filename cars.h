@@ -87,31 +87,60 @@ struct	sCar {
 		eDirection otherdir = otherCar->dir;
 
 		switch (dir) {
-		case eDirection::UP:
-			if ((otherdir == eDirection::LEFT) && \
-				(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
-				(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height))
-				result = true;
-			break;
-		case eDirection::DOWN:
-			if ((otherdir == eDirection::RIGHT) && \
-				(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
-				(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
-				result = true;
-			break;
-		case eDirection::RIGHT:
-			if ((otherdir == eDirection::UP) && \
-				(otherCar->rect.pos.y + otherCar->rect.size.height > rect.pos.y) && \
-				(rect.pos.x + rect.size.width <= otherCar->rect.pos.x))
-				result = true;
-			break;
-		case eDirection::LEFT:
-			if ((otherdir == eDirection::DOWN) &&\
-				(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height) && \
-				(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))
-				result = true;
-			break;
+			case eDirection::UP:
+				if ((otherdir == eDirection::LEFT) && \
+					(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
+					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height))
+					result = true;
+				break;
+			case eDirection::DOWN:
+				if ((otherdir == eDirection::RIGHT) && \
+					(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
+					(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
+					result = true;
+				break;
+			case eDirection::RIGHT:
+				if ((otherdir == eDirection::UP) && \
+					(otherCar->rect.pos.y + otherCar->rect.size.height > rect.pos.y) && \
+					(rect.pos.x + rect.size.width <= otherCar->rect.pos.x))
+					result = true;
+				break;
+			case eDirection::LEFT:
+				if ((otherdir == eDirection::DOWN) &&\
+					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height) && \
+					(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))
+					result = true;
+				break;
 		}
+
+/*
+		switch (dir) {
+			case eDirection::UP:
+				if ((otherdir == eDirection::LEFT) && \
+					(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
+					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height))
+					result = true;
+				break;
+			case eDirection::DOWN:
+				if ((otherdir == eDirection::RIGHT) && \
+					(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
+					(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
+					result = true;
+				break;
+			case eDirection::RIGHT:
+				if ((otherdir == eDirection::UP) && \
+					(otherCar->rect.pos.y + otherCar->rect.size.height > rect.pos.y) && \
+					(rect.pos.x + rect.size.width <= otherCar->rect.pos.x))
+					result = true;
+				break;
+			case eDirection::LEFT:
+				if ((otherdir == eDirection::DOWN) &&\
+					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height) && \
+					(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))
+					result = true;
+				break;
+		}
+*/
 		return result;
 	}
 
@@ -150,7 +179,8 @@ struct sHybrid : sGasEngine, sElectroCar {
 };
 
 extern std::vector<sCar*> cars;
-const int initialCarsCount = 6;
+const int initialCarsCount = 10;
+extern sRect	cross;
 
 void	spawnCar();
 sCar*	randTypeCar();
@@ -161,5 +191,6 @@ void	spawnCarFromRight();
 bool	main_loop();
 
 int		init_window(void);
+void	drawScene();
 
 #endif

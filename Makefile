@@ -1,7 +1,8 @@
-NAME = cars20
+NAME = cars
 SRC = init_window.cpp \
 		main.cpp
 HEAD = cars.h
+
 all: $(NAME)
 
 run: $(NAME)

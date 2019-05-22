@@ -10,7 +10,11 @@ int		init_window(void)
 		printf("SDL not init! SDL_Error: %s\n", SDL_GetError());
 	else
 	{
-		window = SDL_CreateWindow("Test task for MYTONA", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("Test task for MYTONA", SDL_WINDOWPOS_UNDEFINED, \
+															SDL_WINDOWPOS_UNDEFINED, \
+															SCREEN_WIDTH, \
+															SCREEN_HEIGHT, \
+															SDL_WINDOW_SHOWN);
 		if (window == NULL)
 			printf("Window not create! SDL_Error: %s\n", SDL_GetError());
 		else
@@ -33,8 +37,6 @@ int		init_window(void)
 				if (ret == 0)
 					ret = main_loop();
 				drawScene();
-				// if (ret != 0)
-				// 	done = true;
 			}
 		}
 	}

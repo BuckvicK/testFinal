@@ -28,7 +28,7 @@ sCar*	randTypeCar() {
 	else
 		car = new sHybrid();
 	car->refill(100);
-	car->speed = 1;
+	car->speed = 9;
 	cars.push_back(car);
 	return car;
 }
@@ -80,14 +80,6 @@ void	spawnCarFromRight() {
 	car->rect = sRect(SCREEN_WIDTH - 100, SCREEN_HEIGHT / 2 - 100, 100, 100);
 	car->dir = eDirection::LEFT;
 }
-
-/*
-bool	isCarOnCross(sCar* car){
-	if (car->getFuturePos().intersects(cross))
-		return true;
-	return false;
-}
-*/
 
 bool	isCarOnCross(sCar* car){
 	switch (car->dir)

@@ -1,4 +1,4 @@
-NAME = cars
+NAME = cars20
 SRC = init_window.cpp \
 		main.cpp
 HEAD = cars.h

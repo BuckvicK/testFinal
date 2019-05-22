@@ -57,5 +57,5 @@ void	drawScene(){
 		SDL_FillRect(screenSurface, &rect, SDL_MapRGB(screenSurface->format, 0x99, 0x99, 0x99));
 	}
 	SDL_UpdateWindowSurface(window);
-	// SDL_Delay(20);
+	SDL_Delay(20);
 }

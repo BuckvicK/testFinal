@@ -28,7 +28,7 @@ sCar*	randTypeCar() {
 	else
 		car = new sHybrid();
 	car->refill(100);
-	car->speed = 1;
+	car->speed = 10;
 	cars.push_back(car);
 	return car;
 }

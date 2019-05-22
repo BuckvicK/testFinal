@@ -53,8 +53,6 @@ void	drawScene(){
 		rects.push_back(rect);
 	}
 	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-	SDL_Rect rectCross = {cross.pos.x, cross.pos.y, cross.size.width, cross.size.height};
-	SDL_FillRect(screenSurface, &rectCross, SDL_MapRGB(screenSurface->format, 0x20, 0x20, 0x90));
 	for (auto rect: rects) {
 		SDL_FillRect(screenSurface, &rect, SDL_MapRGB(screenSurface->format, 0x99, 0x99, 0x99));
 	}

@@ -151,7 +151,6 @@ struct sHybrid : sGasEngine, sElectroCar {
 
 extern std::vector<sCar*> cars;
 const int initialCarsCount = 10;
-extern sRect	cross;
 
 void	spawnCar();
 sCar*	randTypeCar();

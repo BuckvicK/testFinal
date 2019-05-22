@@ -5,6 +5,7 @@ SDL_Surface* screenSurface = NULL;
 
 int		init_window(void)
 {
+	int ret = 0;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		printf("SDL not init! SDL_Error: %s\n", SDL_GetError());
 	else
@@ -29,10 +30,11 @@ int		init_window(void)
 							break;
 					}
 				}
-				int ret = main_loop();
+				if (ret == 0)
+					ret = main_loop();
 				drawScene();
-				if (ret != 0)
-					done = true;
+				// if (ret != 0)
+				// 	done = true;
 			}
 		}
 	}

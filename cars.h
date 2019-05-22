@@ -4,8 +4,11 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+// #define SCREEN_WIDTH 1024
+// #define SCREEN_HEIGHT 768
+
+#define SCREEN_WIDTH 1400
+#define SCREEN_HEIGHT (SCREEN_WIDTH / 4 * 3)
 
 struct sPos {
 	int x;
@@ -88,27 +91,39 @@ struct	sCar {
 
 		switch (dir) {
 			case eDirection::UP:
+				// if ((otherdir == eDirection::LEFT) && \
+				// 	(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
+				// 	(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height))
 				if ((otherdir == eDirection::LEFT) && \
-					(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
-					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height))
+					(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
+					(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x))
 					result = true;
 				break;
 			case eDirection::DOWN:
-				if ((otherdir == eDirection::RIGHT) && \
-					(otherCar->rect.pos.x <= rect.pos.x + rect.size.width) && \
-					(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
+				// if ((otherdir == eDirection::RIGHT) && \
+				// 	(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
+				// 	(rect.pos.y + rect.size.height <= otherCar->rect.pos.y))
+				if ((otherdir == eDirection::RIGHT) && 
+					(otherCar->rect.pos.x + otherCar->rect.size.width >= rect.pos.x) && \
+					(otherCar->rect.pos.x <= rect.pos.x + rect.size.width))
 					result = true;
 				break;
 			case eDirection::RIGHT:
+				// if ((otherdir == eDirection::UP) && \
+				// 	(otherCar->rect.pos.y + otherCar->rect.size.height >= rect.pos.y) && \
+				// 	(rect.pos.x + rect.size.width <= otherCar->rect.pos.x))
 				if ((otherdir == eDirection::UP) && \
-					(otherCar->rect.pos.y + otherCar->rect.size.height > rect.pos.y) && \
-					(rect.pos.x + rect.size.width <= otherCar->rect.pos.x))
+					(otherCar->rect.pos.y <= rect.pos.y + rect.size.height) && \
+					(otherCar->rect.pos.y + otherCar->rect.size.height >= rect.pos.y))
 					result = true;
 				break;
 			case eDirection::LEFT:
-				if ((otherdir == eDirection::DOWN) &&\
-					(rect.pos.y >= otherCar->rect.pos.y + otherCar->rect.size.height) && \
-					(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))
+				// if ((otherdir == eDirection::DOWN) && \
+				// 	(otherCar->rect.pos.y <= rect.pos.y + rect.size.height) && \
+				// 	(rect.pos.x >= otherCar->rect.pos.x + otherCar->rect.size.width))
+				if ((otherdir == eDirection::DOWN) && \
+					(otherCar->rect.pos.y + otherCar->rect.size.height >= rect.pos.y) && \
+					(otherCar->rect.pos.y <= rect.pos.y + rect.size.height))
 					result = true;
 				break;
 		}

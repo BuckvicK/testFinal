@@ -81,6 +81,45 @@ void	spawnCarFromRight() {
 	car->dir = eDirection::LEFT;
 }
 
+/*
+bool	isCarOnCross(sCar* car){
+	if (car->getFuturePos().intersects(cross))
+		return true;
+	return false;
+}
+*/
+
+bool	isCarOnCross(sCar* car){
+	switch (car->dir)
+	{
+		case (eDirection::RIGHT):
+			if ((car->rect.pos.x + car->rect.size.width <= SCREEN_WIDTH / 2 - 100) && \
+				(car->getFuturePos().pos.x + car->rect.size.width > SCREEN_WIDTH / 2 - 100))
+				return (true);
+			break;
+		case (eDirection::LEFT):
+			if ((car->rect.pos.x >= SCREEN_WIDTH / 2 + 100) && \
+				(car->getFuturePos().pos.x < SCREEN_WIDTH / 2 + 100))
+				return (true);
+			break;
+		case (eDirection::DOWN):
+			if ((car->rect.pos.y + car->rect.size.height <= SCREEN_HEIGHT / 2 - 100) && \
+				(car->getFuturePos().pos.y + car->rect.size.height > SCREEN_HEIGHT / 2 - 100))
+				return (true);
+			break;
+		case (eDirection::UP):
+			if ((car->rect.pos.y >= SCREEN_HEIGHT / 2 + 100) && \
+				(car->getFuturePos().pos.y < SCREEN_HEIGHT / 2 + 100))
+				return (true);
+			break;
+		default:
+			break;
+	}
+	return (false);
+}
+
+
+/*
 bool	isCarOnCross(sCar* car){
 	if (car->dir == eDirection::RIGHT){
 		if ((car->getFuturePos().pos.x + car->rect.size.width >= SCREEN_WIDTH / 2 - 100) && \
@@ -112,11 +151,18 @@ bool	isCarOnCross(sCar* car){
 	}
 	return (false);
 }
+*/
+struct	compareX{
+	inline bool operator() (const sCar* c1, const sCar* c2){
+        return (c1->rect.pos.x < c2->rect.pos.x);
+    }
+};
 
 bool	main_loop() {
 	std::vector<sCar*> moveCars;
 
 	int	carsOnCross = 0;
+	std::sort(cars.begin(), cars.end(), compareX());
 	for (auto car: cars){
 		if (isCarOnCross(car) == true)
 			carsOnCross++;
@@ -124,60 +170,62 @@ bool	main_loop() {
 			break ;
 	}
 
-	if (carsOnCross >= 4){
-		sCar* minCar = cars[0];
-		for (auto car: cars){
-			if (car->rect.pos.x < minCar->rect.pos.x){
-				minCar = car;
-			}
-		}
-		sRect	minCarFuturePos = minCar->getFuturePos();
+	for (int i = 0; i < cars.size(); i++)
+	{
+		sCar*	currentCar = cars[i];
 		int		checkIntersect = 0;
-		for (auto car: cars){
-			if (car != minCar && car->rect.intersects(minCarFuturePos)){
-				checkIntersect++;
-				break ;
-			}
-		}
-		if (checkIntersect == 0){
-			while(isCarOnCross(minCar)){
-				minCar->move();
-				drawScene();
-			}
-		}
-	}
-
-	for (int i = 0; i < cars.size(); i++){
-		int		intr = 0;
-		int 	passCount = 0;
-		sCar*	currentCar = cars[i];
-
-		// if (isCarOnCross(currentCar)){
-		// 	for (auto c: cars){
-		// 		if (currentCar != c && isCarOnCross(c)){
-		// 			if (currentCar->needPassOtherCar(c)) {
-		// 				passCount++;
-		// 				break ;
-		// 			}
-		// 		}
-		// 	}
-		// }
-		for (int j = 0;  j < cars.size(); j++) {
-			sCar*	otherCar = cars[j];
-			if (currentCar != otherCar) {
-				if (currentCar->getFuturePos().intersects(otherCar->getFuturePos())) {
-					if (currentCar->needPassOtherCar(otherCar)) {
-						passCount++;
-						break ;
+		int		checkPass = 0;
+		if (isCarOnCross(currentCar))
+		{
+			if (carsOnCross >= 4){
+				for (int j = 0; j < cars.size(); j++)
+				{
+					sCar* otherCar = cars[j];
+					if (currentCar != otherCar){
+						if (currentCar->getFuturePos().intersects(otherCar->rect)){
+							checkIntersect++;
+							break ;
+						}
 					}
 				}
-				if (currentCar->getFuturePos().intersects(otherCar->rect))
-					intr++;
+				if (checkIntersect == 0){
+					moveCars.push_back(currentCar);
+					checkIntersect = 10;
+					break ;
+				}
+			}
+			else
+			{
+				for (int j = 0; j < cars.size(); j++)
+				{
+					sCar* otherCar = cars[j];
+					if (currentCar != otherCar){
+						if (currentCar->getFuturePos().intersects(otherCar->getFuturePos())){
+							checkIntersect++;
+							break ;
+						}
+						if (currentCar->needPassOtherCar(otherCar)){
+							checkPass++;
+							break ;
+						}
+					}
+				}
 			}
 		}
-		if (passCount != 0)
-			continue ;
-		if (intr == 0)
+		for (int j = 0; j < cars.size(); j++){
+			sCar* otherCar = cars[j];
+			if (currentCar != otherCar){
+				if (currentCar->getFuturePos().intersects(otherCar->rect)){
+					checkIntersect++;
+					break ;
+				}
+			}
+		}
+
+		// printf("INTER: %d\tPASS: %d\tCAR_DIR: %d\n", checkIntersect, checkPass, currentCar->dir);
+		if (checkPass != 0)
+			continue;
+		if (checkIntersect == 0)
 			moveCars.push_back(currentCar);
 
 		if (currentCar->rect.pos.x < -currentCar->rect.size.width || \
@@ -190,47 +238,18 @@ bool	main_loop() {
 				break;
 		}
 	}
-
-	/*
-	for (int i = 0; i < cars.size(); i++){
-		int		pass = 0;
-		int		intr = 0;
-		sCar*	currentCar = cars[i];
-
-		passCount = 0;
-		for (int j = 0;  j < cars.size(); j++) {
-			sCar*	otherCar = cars[j];
-			if (currentCar != otherCar) {
-				if (currentCar->getFuturePos().intersects(otherCar->getFuturePos())) {
-					if (currentCar->needPassOtherCar(otherCar)) {
-						passCount++;
-						break ;
-					}
-				}
-				if (currentCar->getFuturePos().intersects(otherCar->rect))
-					intr++;
-			}
-		}
-		if (passCount != 0)
-			continue ;
-		if (intr == 0)
-			moveCars.push_back(currentCar);
-
-		if (currentCar->rect.pos.x < -currentCar->rect.size.width || \
-			currentCar->rect.pos.y < -currentCar->rect.size.height || \
-			currentCar->rect.pos.x > SCREEN_WIDTH || \
-			currentCar->rect.pos.y > SCREEN_HEIGHT) {
-				sCar* tmp = cars[i];
-				delete tmp;
-				cars.erase(cars.begin() + i);
-				break;
-		}
-	}
-	*/
 
 	for (auto c: moveCars)
 		c->move();
 	moveCars.clear();
+
+	for (auto c1: cars)
+		for (auto c2: cars)
+			if (c1 != c2 && c1->rect.intersects(c2->rect)){
+				printf("C1: %d\t C2: %d\t", c1->dir, c2->dir);
+				printf("--===_TEST INTERSECTS TRUE_===--\n");
+				return (0);
+			}
 
 	if (cars.size() < initialCarsCount)
 		spawnCar();
@@ -238,14 +257,46 @@ bool	main_loop() {
 }
 
 void	testSpawn(){
+
+
+	// spawnCarFromLeft();
+	// cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 * 1 - cars[cars.size() - 1]->rect.size.width;
+
+	// spawnCarFromLeft();
+	// cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 * 2 - cars[cars.size() - 1]->rect.size.width;
+
+	// spawnCarFromLeft();
+	// cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 * 3 - cars[cars.size() - 1]->rect.size.width;
+
+	// spawnCarFromLeft();
+	// cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 * 4 - cars[cars.size() - 1]->rect.size.width;
+
+	// spawnCarFromLeft();
+	// cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 * 5 - cars[cars.size() - 1]->rect.size.width;
+
+
+
+
 	spawnCarFromLeft();
-	cars[0]->rect.pos.x = SCREEN_WIDTH / 2 - 100 - cars[0]->rect.size.width;
+	cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 - 100 - cars[cars.size() - 1]->rect.size.width;
+
 	spawnCarFromRight();
-	cars[1]->rect.pos.x = SCREEN_WIDTH / 2 + 100;
+	cars[cars.size() - 1]->rect.pos.x = SCREEN_WIDTH / 2 + 100;
+
 	spawnCarFromTop();
-	cars[2]->rect.pos.y = SCREEN_HEIGHT / 2 - 100 - cars[2]->rect.size.width;
+	cars[cars.size() - 1]->rect.pos.y = SCREEN_HEIGHT / 2 - 100 - cars[cars.size() - 1]->rect.size.width;
+
 	spawnCarFromBot();
-	cars[3]->rect.pos.y = SCREEN_HEIGHT / 2 + 100;
+	cars[cars.size() - 1]->rect.pos.y = SCREEN_HEIGHT / 2 + 100;
+
+
+
+
+	// spawnCarFromLeft();
+	// spawnCarFromRight();
+	// spawnCarFromTop();
+	// spawnCarFromBot();
+
 }
 
 void	createCross(){
@@ -256,11 +307,12 @@ void	createCross(){
 }
 
 int		main(int argc, char** argv) {
-	createCross();
+	// createCross();
 	// for (auto i = 0; i < initialCarsCount; ++i) {
 	// 	spawnCar();
 	// }
 	testSpawn();
+	// return(0);
 	init_window();
 	return 0;
 }
